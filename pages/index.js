@@ -1,6 +1,8 @@
 import Editor from '@monaco-editor/react';
 import React, { useEffect } from 'react';
 import Script from 'next/script';
+import { Button } from '@chakra-ui/button';
+import { Container, VStack } from '@chakra-ui/layout';
 
 const starterCode = `// Write your code here
 console.log('Hello World');`;
@@ -35,23 +37,32 @@ export default function Home() {
         onLoad={() => setCompilerReady(true)}
         src='https://unpkg.com/typescript@latest/lib/typescriptServices.js'
       />
-      <div>
-        <Editor
-          height='50vh'
-          width='50%'
-          language='typescript'
-          defaultValue={starterCode}
-          value={inputCode}
-          onChange={setInputCode}
-          theme='vs-dark'
-        />
+      <Container padding='5'>
+        <VStack>
+          <Editor
+            height='60vh'
+            width='100%'
+            language='typescript'
+            defaultValue={starterCode}
+            value={inputCode}
+            onChange={setInputCode}
+            theme='vs-dark'
+          />
 
-        <button onClick={compileAndExecute} disabled={!compilerReady}>
-          Run
-        </button>
+          <Button backgroundColor='green.200' onClick={compileAndExecute} disabled={!compilerReady}>
+            Run
+          </Button>
 
-        {logs && <pre>{logs}</pre>}
-      </div>
+          {logs && (
+            <Editor
+              defaultValue='// Output will be shown here'
+              height='30vh'
+              value={logs.toString()}
+              theme='vs-dark'
+            />
+          )}
+        </VStack>
+      </Container>
     </>
   );
 }
