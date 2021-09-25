@@ -2,8 +2,11 @@ import Editor from '@monaco-editor/react';
 import React, { useEffect } from 'react';
 import Script from 'next/script';
 
+const starterCode = `// Write your code here
+console.log('Hello World');`;
+
 export default function Home() {
-  const [inputCode, setInputCode] = React.useState('');
+  const [inputCode, setInputCode] = React.useState(starterCode);
   const [compilerReady, setCompilerReady] = React.useState(false);
   const [logs, setLogs] = React.useState([]);
 
@@ -36,8 +39,8 @@ export default function Home() {
         <Editor
           height='50vh'
           width='50%'
-          defaultLanguage='typescript'
-          defaultValue='// some comment'
+          language='typescript'
+          defaultValue={starterCode}
           value={inputCode}
           onChange={setInputCode}
           theme='vs-dark'
