@@ -4,14 +4,20 @@ import Script from 'next/script';
 import { Button } from '@chakra-ui/button';
 import { Container, VStack } from '@chakra-ui/layout';
 import Head from 'next/head';
+import { useToast } from '@chakra-ui/react';
 
 const starterCode = `// Write your code here
 console.log('Hello World');`;
+
+function formatOutput(output) {
+  return output.toString().split(',').join('\n');
+}
 
 export default function Home() {
   const [inputCode, setInputCode] = React.useState(starterCode);
   const [compilerReady, setCompilerReady] = React.useState(false);
   const [logs, setLogs] = React.useState([]);
+  const toast = useToast();
 
   useEffect(() => {
     console.stdlog = console.log.bind(console);
@@ -32,6 +38,16 @@ export default function Home() {
     eval(jsCode);
   }, [inputCode, clearLogs]);
 
+  const copyOutput = React.useCallback(() => {
+    navigator.clipboard.writeText(formatOutput(logs));
+    toast({
+      title: 'Output copied to clipboard.',
+      status: 'info',
+      duration: 3000,
+      isClosable: true,
+    });
+  }, [logs, toast]);
+
   return (
     <>
       <Head>
@@ -42,9 +58,17 @@ export default function Home() {
         src='https://unpkg.com/typescript@latest/lib/typescriptServices.js'
       />
       <Container padding='5'>
-        <VStack>
+        <VStack
+          spacing={4}
+          onKeyUp={(e) => {
+            if (e.ctrlKey && e.keyCode === 13) {
+              compileAndExecute();
+              setInputCode((input) => input.slice(0, input.length - 1));
+            }
+          }}
+        >
           <Editor
-            height='60vh'
+            height='50vh'
             width='100%'
             language='typescript'
             defaultValue={starterCode}
@@ -65,10 +89,12 @@ export default function Home() {
             <Editor
               defaultValue='// Output will be shown here'
               height='30vh'
-              value={logs.toString().split(',').join('\n')}
+              value={formatOutput(logs)}
               theme='vs-dark'
             />
           )}
+
+          <Button onClick={copyOutput}>Copy Output</Button>
         </VStack>
       </Container>
     </>
