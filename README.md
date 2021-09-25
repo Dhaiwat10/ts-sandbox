@@ -17,3 +17,10 @@ To build the app for production & serve it:
 $ yarn build
 $ yarn start
 ```
+
+## To-dos
+
+- [ ] Make the sandbox more secure
+- [ ] Make the sandbox more configurable
+- [ ] Add type-checking
+- [ ] Create a PoC for SWC / Wasm

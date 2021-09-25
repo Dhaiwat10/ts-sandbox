@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import Script from 'next/script';
 import { Button } from '@chakra-ui/button';
 import { Container, VStack } from '@chakra-ui/layout';
+import Head from 'next/head';
 
 const starterCode = `// Write your code here
 console.log('Hello World');`;
@@ -33,6 +34,9 @@ export default function Home() {
 
   return (
     <>
+      <Head>
+        <title>TS Sandbox</title>
+      </Head>
       <Script
         onLoad={() => setCompilerReady(true)}
         src='https://unpkg.com/typescript@latest/lib/typescriptServices.js'
