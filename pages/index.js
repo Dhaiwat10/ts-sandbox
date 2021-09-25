@@ -49,7 +49,11 @@ export default function Home() {
             theme='vs-dark'
           />
 
-          <Button backgroundColor='green.200' onClick={compileAndExecute} disabled={!compilerReady}>
+          <Button
+            backgroundColor='green.200'
+            onClick={compileAndExecute}
+            disabled={!compilerReady}
+          >
             Run
           </Button>
 
@@ -57,7 +61,7 @@ export default function Home() {
             <Editor
               defaultValue='// Output will be shown here'
               height='30vh'
-              value={logs.toString()}
+              value={logs.toString().split(',').join('\n')}
               theme='vs-dark'
             />
           )}
