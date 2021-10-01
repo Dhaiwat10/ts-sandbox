@@ -14,12 +14,52 @@ function formatOutput(output) {
   return output.toString().split(',').join('\n');
 }
 
+function getTypeErrors(code, ts) {
+  const dummyFilePath = '/file.ts';
+  const textAst = ts.createSourceFile(
+    dummyFilePath,
+    code,
+    ts.ScriptTarget.Latest
+  );
+  const options = {};
+  const host = {
+    fileExists: (filePath) => filePath === dummyFilePath,
+    directoryExists: (dirPath) => dirPath === '/',
+    getCurrentDirectory: () => '/',
+    getDirectories: () => [],
+    getCanonicalFileName: (fileName) => fileName,
+    getNewLine: () => '\n',
+    getDefaultLibFileName: () => '',
+    getSourceFile: (filePath) =>
+      filePath === dummyFilePath ? textAst : undefined,
+    readFile: (filePath) => (filePath === dummyFilePath ? code : undefined),
+    useCaseSensitiveFileNames: () => true,
+    writeFile: () => {},
+  };
+  const program = ts.createProgram({
+    options,
+    rootNames: [dummyFilePath],
+    host,
+  });
+
+  return ts
+    .getPreEmitDiagnostics(program)
+    .filter((d) => d.file)
+    .filter(
+      (d) =>
+        // Ignoring an error that says that console is not in scope (more about it here: https://stackoverflow.com/a/53764522 (check the imperfect example section))
+        !d.messageText.startsWith("Cannot find name 'console'")
+    )
+    .map((d) => d.messageText);
+}
+
 export default function Home() {
   const [inputCode, setInputCode] = React.useState(starterCode);
   const [compilerReady, setCompilerReady] = React.useState(false);
   const [logs, setLogs] = React.useState([]);
   const [compileDuration, setCompileDuration] = React.useState(null);
   const [execDuration, setExecDuration] = React.useState(null);
+  const [errors, setErrors] = React.useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -32,17 +72,25 @@ export default function Home() {
 
   const clearLogs = React.useCallback(() => {
     setLogs([]);
+    setErrors([]);
   }, [setLogs]);
 
   const compileAndExecute = React.useCallback(() => {
     const compileStart = Date.now();
     clearLogs();
     const code = inputCode;
-    const jsCode = window.ts.transpile(code);
-    setCompileDuration(Date.now() - compileStart);
-    const execStart = Date.now();
-    eval(jsCode);
-    setExecDuration(Date.now() - execStart);
+
+    const typeErrors = getTypeErrors(code, window.ts);
+
+    if (typeErrors.length === 0) {
+      const jsCode = window.ts.transpile(code);
+      setCompileDuration(Date.now() - compileStart);
+      const execStart = Date.now();
+      eval(jsCode);
+      setExecDuration(Date.now() - execStart);
+    } else {
+      setErrors(typeErrors);
+    }
   }, [inputCode, clearLogs]);
 
   const copyOutput = React.useCallback(() => {
@@ -81,6 +129,9 @@ export default function Home() {
             </Link>
           </HStack>
 
+          <Text width='100%' textAlign='left' fontWeight='bold'>
+            Write your code here
+          </Text>
           <Editor
             height='50vh'
             width='100%'
@@ -100,14 +151,37 @@ export default function Home() {
             Run
           </Button>
 
-          {logs && (
-            <Editor
-              defaultValue='// Output will be shown here'
-              height='30vh'
-              value={formatOutput(logs)}
-              theme='vs-dark'
-            />
+          {errors.length > 0 && (
+            <>
+              <Text textAlign='left' width='100%' fontWeight='bold'>
+                Errors
+              </Text>
+              {errors.map((err, idx) => (
+                <Text
+                  width='100%'
+                  textAlign='left'
+                  fontSize='sm'
+                  key={idx}
+                  color='red'
+                >
+                  {err}
+                </Text>
+              ))}
+            </>
           )}
+
+          <Text width='100%' textAlign='left' fontWeight='bold'>
+            Output
+          </Text>
+          <Editor
+            defaultValue='// Output will be shown here'
+            height='30vh'
+            value={formatOutput(logs)}
+            theme='vs-dark'
+            options={{
+              readOnly: true,
+            }}
+          />
 
           <Button leftIcon={<CopyIcon />} onClick={copyOutput}>
             Copy Output
