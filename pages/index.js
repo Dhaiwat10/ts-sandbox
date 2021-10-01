@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import Script from 'next/script';
 import { Button } from '@chakra-ui/button';
 import { Container, VStack, Heading, HStack, Text } from '@chakra-ui/layout';
-import Head from 'next/head';
 import { useToast, Link } from '@chakra-ui/react';
 import { CopyIcon, SettingsIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 
@@ -105,9 +104,6 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>TS Sandbox</title>
-      </Head>
       <Script
         onLoad={() => setCompilerReady(true)}
         src='https://unpkg.com/typescript@latest/lib/typescriptServices.js'
